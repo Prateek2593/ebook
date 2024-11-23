@@ -15,9 +15,13 @@
   "author": "Prateek Patidar",
   "license": "ISC",
   "devDependencies": {
+    "@eslint/js": "^9.15.0",
     "@types/node": "^22.9.3",
+    "eslint": "^9.15.0",
+    "globals": "^15.12.0",
     "nodemon": "^3.1.7",
     "ts-node": "^10.9.2",
-    "typescript": "^5.7.2"
+    "typescript": "^5.7.2",
+    "typescript-eslint": "^8.15.0"
   }
 }
