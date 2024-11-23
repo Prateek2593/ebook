@@ -1,0 +1,23 @@
+{
+  "name": "ebook",
+  "version": "1.0.0",
+  "description": "ebook app",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon server.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "restapi",
+    "node",
+    "express"
+  ],
+  "author": "Prateek Patidar",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^22.9.3",
+    "nodemon": "^3.1.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.7.2"
+  }
+}
