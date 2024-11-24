@@ -61,7 +61,7 @@ const loginUser = async (req: Request, res: Response, next: NextFunction) => {
   }
 
   //Database operations
-  let user: User;
+  let user: User | null;
   try {
     user = await userModel.findOne({ email: email });
     if (!user) {
