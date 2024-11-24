@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import createHttpError from "http-errors";
-import User from "./userModel";
+import userModel from "./userModel";
 import bcrypt from "bcrypt";
 import { sign } from "jsonwebtoken";
 import { config } from "../config/config";
@@ -16,7 +16,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
   //Database operations
   try {
-    const user = await User.findOne({ email: email });
+    const user = await userModel.findOne({ email: email });
     if (user) {
       const error = createHttpError(400, "Email already exists");
       return next(error);
@@ -30,7 +30,7 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
 
   let newUser: User;
   try {
-    newUser = await User.create({
+    newUser = await userModel.create({
       name,
       email,
       password: hashedPassword,
