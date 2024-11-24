@@ -46,10 +46,48 @@ const createUser = async (req: Request, res: Response, next: NextFunction) => {
     });
 
     //Response
-    res.json({ accessToken: token });
+    res.status(201).json({ accessToken: token });
   } catch (error) {
     return next(createHttpError(500, "Error while generating token"));
   }
 };
 
-export { createUser };
+const loginUser = async (req: Request, res: Response, next: NextFunction) => {
+  //Validation
+  const { email, password } = req.body;
+  if (!email || !password) {
+    const error = createHttpError(400, "All required fields");
+    return next(error);
+  }
+
+  //Database operations
+  let user: User;
+  try {
+    user = await userModel.findOne({ email: email });
+    if (!user) {
+      const error = createHttpError(401, "Invalid email or password");
+      return next(error);
+    }
+  } catch (error) {
+    return next(createHttpError(500, "Error while getting user"));
+  }
+
+  //Password comparison
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    const error = createHttpError(401, "Invalid email or password");
+    return next(error);
+  }
+
+  try {
+    //token generation
+    const token = sign({ sub: user._id }, config.jwtSecret as string, {
+      expiresIn: "7d",
+    });
+    //Response
+    res.json({ accessToken: token });
+  } catch (error) {
+    return next(createHttpError(500, "Error while generating token"));
+  }
+};
+export { createUser, loginUser };
