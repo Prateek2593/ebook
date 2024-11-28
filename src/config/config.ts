@@ -9,6 +9,7 @@ const _config = {
   cloudinaryCloud: process.env.CLOUDINARY_CLOUD,
   cloudinaryKey: process.env.CLOUDINARY_API_KEY,
   cloudinarySecret: process.env.CLOUDINARY_API_SECRET,
+  frontendDomain: process.env.FRONTEND_DOMAIN,
 };
 
 //Object.freeze() - Prevents the modification of existing property attributes and values, and prevents the addition of new properties.
