@@ -179,12 +179,19 @@ const updateBook = async (req: Request, res: Response, next: NextFunction) => {
 };
 
 const listBooks = async (req: Request, res: Response, next: NextFunction) => {
+  // Controller to fetch and return a list of all books.
   try {
-    //todo: add pagination
+    // todo: add pagination
+    // Note: Pagination is suggested to improve performance when the dataset is large.
+
     const book = await bookModel.find();
-    return res.json({ book });
+    // Fetching all books from the database using the `find` method.
+
+    res.json({ book });
+    // Sending the list of books as a JSON response.
   } catch (error) {
     return next(createHttpError(500, "Error while fetching books"));
+    // Returning a 500 Internal Server Error if the database query fails.
   }
 };
 
@@ -193,15 +200,83 @@ const getSingleBook = async (
   res: Response,
   next: NextFunction
 ) => {
+  // Controller to fetch and return details of a single book by its ID.
   const bookId = req.params.bookId;
+  // Extracting the `bookId` parameter from the request.
+
   try {
     const book = await bookModel.findOne({ _id: bookId });
+    // Fetching a single book by its ID from the database.
+
     if (!book) {
+      // Checking if the book was not found.
       return next(createHttpError(404, "Book not found"));
+      // Returning a 404 Not Found error if the book does not exist.
     }
-    return res.json({ book });
+
+    res.json({ book });
+    // Sending the book details as a JSON response.
   } catch (error) {
     return next(createHttpError(500, "Error while fetching book"));
+    // Returning a 500 Internal Server Error if the database query fails.
   }
 };
-export { createBook, updateBook, listBooks, getSingleBook };
+
+const deleteBook = async (req: Request, res: Response, next: NextFunction) => {
+  // Controller to delete a book by its ID.
+  const bookId = req.params.bookId;
+  // Extracting the `bookId` parameter from the request.
+
+  try {
+    const book = await bookModel.findOne({ _id: bookId });
+    // Fetching the book by its ID to ensure it exists before deleting.
+
+    if (!book) {
+      // Checking if the book was not found.
+      return next(createHttpError(404, "Book not found"));
+      // Returning a 404 Not Found error if the book does not exist.
+    }
+
+    const _req = req as AuthRequest;
+    // Casting the request to the extended `AuthRequest` type to access `userId`.
+
+    if (book.author.toString() !== _req.userId) {
+      // Checking if the authenticated user is the owner of the book.
+      return next(createHttpError(403, "You cannot delete others' book."));
+      // Returning a 403 Forbidden error if the user is not authorized to delete the book.
+    }
+
+    // Delete the book cover image and book file from Cloudinary
+    const coverFileSplits = book.coverImage.split("/");
+    // Splitting the cover image URL into segments to extract the Cloudinary ID.
+
+    const coverImageId =
+      coverFileSplits.at(-2) + "/" + coverFileSplits.at(-1)?.split(".").at(-2);
+    // Constructing the Cloudinary ID for the cover image.
+
+    const bookFileSplits = book.file.split("/");
+    // Splitting the book file URL into segments to extract the Cloudinary ID.
+
+    const bookFileId = bookFileSplits.at(-2) + "/" + bookFileSplits.at(-1);
+    // Constructing the Cloudinary ID for the book file.
+
+    await cloudinary.uploader.destroy(coverImageId);
+    // Deleting the book's cover image from Cloudinary.
+
+    await cloudinary.uploader.destroy(bookFileId, {
+      resource_type: "raw",
+    });
+    // Deleting the book file from Cloudinary (treated as a raw resource).
+
+    await bookModel.deleteOne({ _id: bookId });
+    // Deleting the book document from the database.
+
+    res.sendStatus(204);
+    // Sending a 204 No Content response to indicate successful deletion.
+  } catch (error) {
+    return next(createHttpError(500, "Error while deleting book"));
+    // Returning a 500 Internal Server Error if any operation fails.
+  }
+};
+
+export { createBook, updateBook, listBooks, getSingleBook, deleteBook };
